@@ -97,7 +97,11 @@ def get_jobs():
                 "skills": r[4].split(",") if r[4] else [],
             }
         )
-    return jsonify({"jobs": jobs})
+    formatted = []
+    for job in jobs:
+        formatted.append(f"{job['title']} – {job['location']} ({job['experience']} yr exp) | Skills: {', '.join(job['skills'])}")
+
+    return jsonify({"jobs": formatted})
 
 
 @app.route("/jobs/search", methods=["POST"])
