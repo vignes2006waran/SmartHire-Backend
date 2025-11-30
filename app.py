@@ -89,31 +89,45 @@ def get_jobs():
 
 @app.route("/jobs/search", methods=["POST"])
 def search_jobs():
-    data = request.json or {}
+    """
+    Simple search that returns a list of job strings for Zoho bot.
+    """
+    data = request.get_json() or {}
 
-    skill = (data.get("skill") or "").lower()
-    min_exp = int(data.get("min_experience") or 0)
+    skill = (data.get("skill") or "").lower().strip()
 
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("SELECT id, title, location, experience, skills FROM jobs")
-    rows = c.fetchall()
-    conn.close()
+    # Static jobs for demo – you can adjust later
+    all_jobs = [
+        {
+            "title": "Python Backend Developer",
+            "location": "Chennai",
+            "experience": 1,
+            "skills": ["Python", "Flask", "SQL"],
+        },
+        {
+            "title": "Frontend Developer",
+            "location": "Remote",
+            "experience": 0,
+            "skills": ["HTML", "CSS", "JavaScript"],
+        },
+        {
+            "title": "Full Stack Engineer",
+            "location": "Bangalore",
+            "experience": 2,
+            "skills": ["React", "Node", "SQL"],
+        },
+    ]
 
-    matches = []
-    for r in rows:
-        skill_list = [s.strip().lower() for s in r[4].split(",")]
-        if r[3] >= min_exp and (skill == "" or skill in skill_list):
-            matches.append({
-                "id": r[0],
-                "title": r[1],
-                "location": r[2],
-                "experience": r[3],
-                "skills": skill_list
-            })
+    # Very simple filter by skill name
+    filtered = []
+    for job in all_jobs:
+        skills_lower = [s.lower() for s in job["skills"]]
+        if not skill or skill in job["title"].lower() or skill in " ".join(skills_lower):
+            line = f"{job['title']} – {job['location']} ({job['experience']} yr exp)"
+            filtered.append(line)
 
-    return jsonify({"jobs": matches})
-
+    # IMPORTANT: return a STRING LIST
+    return jsonify({"jobs": filtered})
 
 @app.route("/apply", methods=["POST"])
 def apply_job():
